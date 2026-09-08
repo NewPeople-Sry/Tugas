@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\Teacher;
 
 class TeacherController extends Controller
 {
@@ -11,7 +12,8 @@ class TeacherController extends Controller
      */
     public function index()
     {
-        return view('guru.dugam', ['title' => 'Daftar Guru', 'name' => 'SMK Negeri 2']);
+        $teachers = Teacher::all();
+        return view('guru.dugam', ['title' => 'Daftar Guru', 'name' => 'SMK Negeri 2', 'teachers' => $teachers]);
     }
 
     /**
@@ -27,7 +29,21 @@ class TeacherController extends Controller
      */
     public function store(Request $request)
     {
-        return $request->nama;
+        $request->validate([
+        'nama' => 'required|string|max:255',
+        'mata_pelajaran' => 'required|string|max:255',
+        'email' => 'required|email|max:255',
+    ]);
+
+    Teacher::create([
+        'nama' => $request->nama,
+        'mata_pelajaran' => $request->mata_pelajaran,
+        'email' => $request->email,
+    ]);
+
+    return redirect()
+        ->route('guru.index')
+        ->with('success', 'Data guru berhasil ditambahkan.');
     }
 
     /**
@@ -43,7 +59,12 @@ class TeacherController extends Controller
      */
     public function edit(string $id)
     {
-        //
+        $teacher = Teacher::findOrFail($id);
+
+        return view('guru.edit', [
+            'title' => 'Edit Guru',
+            'teacher' => $teacher
+        ]);
     }
 
     /**
@@ -51,7 +72,22 @@ class TeacherController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $request->validate([
+            'nama' => 'required|string|max:255',
+            'mata_pelajaran' => 'required|string|max:255',
+            'email' => 'required|email|max:255',
+        ]);
+
+        $teacher = Teacher::findOrFail($id);
+        $teacher->update([
+            'nama' => $request->nama,
+            'mata_pelajaran' => $request->mata_pelajaran,
+            'email' => $request->email,
+        ]);
+
+        return redirect()
+            ->route('guru.index')
+            ->with('success', 'Data guru berhasil diperbarui.');
     }
 
     /**
@@ -59,7 +95,12 @@ class TeacherController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        $teacher = Teacher::findOrFail($id);
+        $teacher->delete();
+
+        return redirect()
+            ->route('guru.index')
+            ->with('success', 'Data guru berhasil dihapus.');
     }
 
     public function api()
